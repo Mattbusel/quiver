@@ -60,11 +60,11 @@ struct ArrowDrawing: View {
     var body: some View {
         Canvas { ctx, size in
             let L = arrow.length
-            let x0 = 30.0, x1 = size.width - 30
+            let x0: Double = 30, x1: Double = Double(size.width) - 30
             let px = (x1 - x0) / (L + 1.4)
             let X: (Double) -> Double = { x0 + $0 * px }
-            let cy = size.height * 0.42
-            let d = max(3, arrow.diameter * 30)
+            let cy: Double = Double(size.height) * 0.42
+            let d: Double = max(3, arrow.diameter * 30)
             ctx.fill(Path(roundedRect: CGRect(x: X(0), y: cy - d / 2, width: L * px, height: d), cornerRadius: 1.5), with: .color(Kraft.ink))
             for s in [-1.0, 1.0] {
                 var v = Path()
@@ -97,7 +97,7 @@ struct FOCScale: View {
     let foc: Double
     var body: some View {
         GeometryReader { g in
-            let pos = max(0, min(1, foc / 25)) * g.size.width
+            let pos: Double = max(0, min(1, foc / 25)) * Double(g.size.width)
             ZStack(alignment: .leading) {
                 Capsule().fill(LinearGradient(colors: [Kraft.ink3, Kraft.fletch, Kraft.amber, Kraft.red], startPoint: .leading, endPoint: .trailing)).frame(height: 8)
                 Circle().fill(Kraft.card).overlay(Circle().strokeBorder(Kraft.ink, lineWidth: 3)).frame(width: 20, height: 20).offset(x: pos - 10)
