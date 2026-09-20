@@ -1,0 +1,1 @@
+Build the arrow, know its FOC and energy, and print a sight tape fitted through the marks you actually shot.

@@ -1,0 +1,20 @@
+Quiver is an archer's field notebook: the arrow build sheet and a sight tape that prints at true size.
+
+Sight tape software costs a subscription or comes bundled with things you do not need. Quiver is the two jobs that matter, on kraft paper in your pocket.
+
+THE ARROW
+• Shaft, point, insert, nock, vanes, wrap: total weight, balance point and FOC, drawn on the page
+• Kinetic energy and momentum, checked against game-weight guidelines
+• A spine starting point from draw weight, point weight, length and release
+
+BOW AND SPEED
+• Speed estimated from rated speed, draw and arrow weight, or your chronograph reading
+• Drag from the arrow's diameter, weight and vanes
+• Drop from a 20-yard zero, time of flight and crosswind drift by distance
+
+SIGHT TAPE
+• Enter two or more marks you shot and the tape is fitted through them with the modelled trajectory, so the far end is right, not just the middle
+• mm, half-mm, inch and click scales, yards or metres, your label spacing and width
+• Shown at true size on screen; share as a PDF that prints 1:1, with a 10 mm check bar
+
+No account, no ads, no tracking. Everything stays on your phone.
