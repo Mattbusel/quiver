@@ -52,21 +52,86 @@ struct TapeSettings: Codable {
     var marks: [Mark] = [Mark(distance: 20, reading: 12.5), Mark(distance: 60, reading: 41.2)]
 }
 
-@Observable
-final class Store {
+/// One bow's worth of notes: its arrow, its bow and its tape.
+struct Setup: Codable, Identifiable {
+    var id = UUID()
+    var name: String
     var arrow = Arrow()
     var bow = Bow()
     var tape = TapeSettings()
+}
+
+@Observable
+final class Store {
+    /// The setup on the page. Every screen reads and writes these three directly.
+    var arrow = Arrow()
+    var bow = Bow()
+    var tape = TapeSettings()
+    /// All setups; the current one's slot is refreshed from the three above on every save and switch.
+    private(set) var setups: [Setup] = [Setup(name: "My bow")]
+    private(set) var current = 0
     private var saveTask: Task<Void, Never>?
     private let url = URL.documentsDirectory.appending(path: "quiver.json")
-    struct Disk: Codable { var arrow: Arrow; var bow: Bow; var tape: TapeSettings }
+    /// 1.0 wrote only arrow, bow and tape; the setup list is optional so those files still load.
+    struct Disk: Codable { var arrow: Arrow; var bow: Bow; var tape: TapeSettings; var setups: [Setup]?; var current: Int? }
 
     init(demo: Bool) {
-        if demo { return }
-        if let d = try? Data(contentsOf: url), let disk = try? JSONDecoder().decode(Disk.self, from: d) { arrow = disk.arrow; bow = disk.bow; tape = disk.tape }
+        if demo {
+            var elk = Setup(name: "3D target")
+            elk.arrow.point = 100; elk.arrow.gpi = 7.8; elk.arrow.use = "target"; elk.bow.drawWeight = 55
+            setups = [Setup(name: "Hunting rig"), elk]
+            return
+        }
+        if let d = try? Data(contentsOf: url), let disk = try? JSONDecoder().decode(Disk.self, from: d) {
+            arrow = disk.arrow; bow = disk.bow; tape = disk.tape
+            if let list = disk.setups, !list.isEmpty {
+                setups = list
+                current = min(max(0, disk.current ?? 0), list.count - 1)
+            }
+        }
+        setups[current].arrow = arrow; setups[current].bow = bow; setups[current].tape = tape
     }
+
+    var currentName: String { setups[current].name }
+
+    private func stash() {
+        setups[current].arrow = arrow; setups[current].bow = bow; setups[current].tape = tape
+    }
+
+    func select(_ i: Int) {
+        guard i != current, setups.indices.contains(i) else { return }
+        stash()
+        current = i
+        arrow = setups[i].arrow; bow = setups[i].bow; tape = setups[i].tape
+        save()
+    }
+
+    /// A new setup starts as a copy of the current one: most people change a few numbers, not all.
+    func addSetup(named name: String) {
+        stash()
+        var s = setups[current]; s.id = UUID(); s.name = name
+        setups.append(s)
+        select(setups.count - 1)
+    }
+
+    func rename(_ name: String) {
+        let n = name.trimmingCharacters(in: .whitespaces)
+        guard !n.isEmpty else { return }
+        setups[current].name = n
+        save()
+    }
+
+    func deleteCurrent() {
+        guard setups.count > 1 else { return }
+        setups.remove(at: current)
+        current = max(0, current - 1)
+        arrow = setups[current].arrow; bow = setups[current].bow; tape = setups[current].tape
+        save()
+    }
+
     func save() {
-        saveTask?.cancel(); let disk = Disk(arrow: arrow, bow: bow, tape: tape); let u = url
+        stash()
+        saveTask?.cancel(); let disk = Disk(arrow: arrow, bow: bow, tape: tape, setups: setups, current: current); let u = url
         saveTask = Task.detached(priority: .utility) {
             try? await Task.sleep(for: .milliseconds(250)); if Task.isCancelled { return }
             if let d = try? JSONEncoder().encode(disk) { try? d.write(to: u, options: .atomic) }

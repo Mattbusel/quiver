@@ -114,6 +114,7 @@ struct FOCScale: View {
 
 struct BowView: View {
     @Environment(Store.self) private var store
+    @Environment(Pro.self) private var pro
     var body: some View {
         @Bindable var store = store
         let zero = store.angle(forFeet: 60)
@@ -135,6 +136,7 @@ struct BowView: View {
                 Field(label: "String extras", hint: "peep, loop, silencers: grains", value: $store.bow.stringExtras)
                 Field(label: "Chronograph", hint: "fps, 0 to estimate instead", value: $store.bow.chrono)
             }.sheet()
+            if pro.unlocked {
             VStack(alignment: .leading, spacing: 8) {
                 Eyebrow("Drop and drift, 20 yard zero")
                 HStack { Text("yd").frame(width: 40, alignment: .leading); Text("time").frame(maxWidth: .infinity); Text("drop").frame(maxWidth: .infinity); Text("10 mph wind").frame(maxWidth: .infinity) }.font(.note(10, .heavy)).foregroundStyle(Kraft.ink3)
@@ -148,9 +150,27 @@ struct BowView: View {
                 }
                 Text(store.estimated ? "Speed is estimated from the rated speed, draw, arrow weight and string extras. A chronograph number makes the sight tape noticeably better." : "Using your chronograph speed with drag from the arrow's diameter, weight and vanes.").font(.note(12)).foregroundStyle(Kraft.ink3)
             }.sheet(tilt: 0.3)
+            } else {
+                LockedBlock(reason: .drop, title: "Drop and drift chart") { DropSample().sheet(tilt: 0.3) }
+            }
         }
         .onChange(of: store.bow.type) { store.save() }.onChange(of: store.bow.drawWeight) { store.save() }.onChange(of: store.bow.drawLength) { store.save() }
         .onChange(of: store.bow.ibo) { store.save() }.onChange(of: store.bow.stringExtras) { store.save() }.onChange(of: store.bow.chrono) { store.save() }
+    }
+}
+
+/// Placeholder rows under the frosted drop chart: shaped like the real thing, not the user's numbers.
+struct DropSample: View {
+    let rows: [(Int, String, String, String)] = [(10, "0.034", "-0.9", "0.1"), (20, "0.069", "0.0", "0.3"), (30, "0.105", "-3.4", "0.6"),
+                                                 (40, "0.142", "-9.7", "1.1"), (50, "0.180", "-18.9", "1.8"), (60, "0.219", "-31.2", "2.6")]
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Eyebrow("Drop and drift, 20 yard zero")
+            ForEach(rows, id: \.0) { r in
+                HStack { Text("\(r.0)").font(.fig(14)).frame(width: 40, alignment: .leading); Text(r.1 + " s").frame(maxWidth: .infinity); Text(r.2 + "\"").frame(maxWidth: .infinity); Text(r.3 + "\"").frame(maxWidth: .infinity) }
+                    .font(.mono(13)).foregroundStyle(Kraft.ink).padding(.vertical, 3)
+            }
+        }
     }
 }
 
@@ -159,6 +179,7 @@ struct BowView: View {
 struct TapeView: View {
     @Environment(Store.self) private var store
     @Environment(Router.self) private var router
+    @Environment(Pro.self) private var pro
     var body: some View {
         @Bindable var store = store
         let fit = store.fit
@@ -200,10 +221,13 @@ struct TapeView: View {
                     if fit.b < 0 { Text("Your marks run backwards (further is a smaller number). Check them.").font(.note(12, .bold)).foregroundStyle(Kraft.red) }
                     else if fit.residuals.count > 2 { Text("Largest miss across your marks: \(f1(fit.residuals.map { abs($0) }.max() ?? 0, 2)) units.").font(.note(12)).foregroundStyle(Kraft.ink3) }
                 }.sheet()
-                InkButton(title: "Print or share the tape", icon: "printer", fill: Kraft.fletch) { router.showTape = true }
+                InkButton(title: pro.unlocked ? "Print or share the tape" : "Print the tape at true size", icon: pro.unlocked ? "printer" : "lock", fill: Kraft.fletch) {
+                    if pro.unlocked { router.showTape = true } else { pro.ask(.print) }
+                }
             } else {
                 Text("Enter at least two sighted-in marks and the tape appears.").font(.note(13)).foregroundStyle(Kraft.ink2).sheet()
             }
+            ProCard()
         }
         .onChange(of: store.tape.unitMM) { store.save() }.onChange(of: store.tape.clicksPerMM) { store.save() }.onChange(of: store.tape.yards) { store.save() }
         .onChange(of: store.tape.from) { store.save() }.onChange(of: store.tape.to) { store.save() }.onChange(of: store.tape.every) { store.save() }.onChange(of: store.tape.widthMM) { store.save() }

@@ -1,6 +1,6 @@
 Quiver is an archer's field notebook: the arrow build sheet and a sight tape that prints at true size.
 
-Sight tape software costs a subscription or comes bundled with things you do not need. Quiver is the two jobs that matter, on kraft paper in your pocket.
+Sight tape software costs a subscription or comes bundled with things you do not need. Quiver is the two jobs that matter, on kraft paper in your pocket. Free to download, and the arrow sheet, speed and fitted marks are free forever.
 
 THE ARROW
 • Shaft, point, insert, nock, vanes, wrap: total weight, balance point and FOC, drawn on the page
@@ -10,11 +10,17 @@ THE ARROW
 BOW AND SPEED
 • Speed estimated from rated speed, draw and arrow weight, or your chronograph reading
 • Drag from the arrow's diameter, weight and vanes
-• Drop from a 20-yard zero, time of flight and crosswind drift by distance
+• Drop from a 20-yard zero, time of flight and crosswind drift by distance (Pro)
 
 SIGHT TAPE
 • Enter two or more marks you shot and the tape is fitted through them with the modelled trajectory, so the far end is right, not just the middle
 • mm, half-mm, inch and click scales, yards or metres, your label spacing and width
-• Shown at true size on screen; share as a PDF that prints 1:1, with a 10 mm check bar
+• Shown at true size on screen; share as a PDF that prints 1:1, with a 10 mm check bar (Pro)
+
+QUIVER PRO, ONE TIME, NO SUBSCRIPTION
+• The true-size sight tape as a PDF: print it at 100%, cut it, stick it on the sight
+• More than one setup: hunting rig, 3D bow, the spare, each with its own arrow, bow and tape
+• The drop and drift chart: time of flight, drop and crosswind drift from 10 to 80 yards
+• One payment, Family Sharing included. Already bought Quiver? Pro is yours automatically.
 
 No account, no ads, no tracking. Everything stays on your phone.
