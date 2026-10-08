@@ -21,6 +21,21 @@ final class Autopilot {
             store.tape.marks.append(Mark(distance: 40, reading: 24.3)); await wait(2.5)
             router.showTape = true; await wait(4)
             router.showTape = false; await wait(1)
+            router.tab = .range; await wait(3)
+            var x = Session(round: "wa18", distance: 18, yards: false, faceCm: 40, setup: store.currentName)
+            x.ends = [End()]
+            store.sessions.insert(x, at: 0)
+            router.scoring = x.id; await wait(2)
+            for (px, py) in [(0.04, 0.06), (-0.1, -0.02), (0.08, -0.12)] {
+                let (sc, x10) = Face.wa10.score(r: (px * px + py * py).squareRoot())
+                store.sessions[0].ends[0].shots.append(Shot(x: px, y: py, score: sc, x10: x10)); await wait(1.2)
+            }
+            await wait(1.5)
+            router.scoring = nil; await wait(1)
+            router.session = store.sessions.first { $0.round == "practice" }?.id; await wait(4)
+            router.session = nil; await wait(1)
+            router.shop = true; await wait(3)
+            router.shop = false; await wait(1)
             try? Data("ok".utf8).write(to: URL.documentsDirectory.appending(path: "demo_done"))
         }
     }

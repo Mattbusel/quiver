@@ -5,12 +5,13 @@ enum Kraft {
     static let paper = Color(red: 0.851, green: 0.780, blue: 0.627)      // #D9C7A0
     static let paper2 = Color(red: 0.902, green: 0.843, blue: 0.702)
     static let card = Color(red: 0.965, green: 0.937, blue: 0.867)       // a lighter sheet
-    static let ink = Color(red: 0.122, green: 0.239, blue: 0.169)        // #1F3D2B
-    static let ink2 = Color(red: 0.122, green: 0.239, blue: 0.169).opacity(0.68)
-    static let ink3 = Color(red: 0.122, green: 0.239, blue: 0.169).opacity(0.42)
-    static let rule = Color(red: 0.122, green: 0.239, blue: 0.169).opacity(0.14)
-    static let fletch = Color(red: 0.62, green: 0.86, blue: 0.14)        // chartreuse
-    static let fletchDeep = Color(red: 0.42, green: 0.62, blue: 0.06)
+    /// Ink and fletching follow the chosen ink theme (Field Green unless one is bought).
+    static var ink: Color { InkTheme.current.ink }
+    static var ink2: Color { InkTheme.current.ink.opacity(0.68) }
+    static var ink3: Color { InkTheme.current.ink.opacity(0.42) }
+    static var rule: Color { InkTheme.current.ink.opacity(0.14) }
+    static var fletch: Color { InkTheme.current.fletch }
+    static var fletchDeep: Color { InkTheme.current.fletchDeep }
     static let red = Color(red: 0.72, green: 0.22, blue: 0.16)
     static let amber = Color(red: 0.78, green: 0.52, blue: 0.10)
 }

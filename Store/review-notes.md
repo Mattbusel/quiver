@@ -4,23 +4,29 @@
 
 No account, login or network connection is required.
 
-VERSION 1.1, IN-APP PURCHASE: Quiver is now free. One non-consumable in-app purchase, "Quiver Pro" (com.mattbusel.quiver.pro, $3.99, one time, no subscription), unlocks the true-size printable sight tape (PDF share), more than one bow setup, and the drop and drift chart. The arrow sheet, the bow and speed page and the fitted sight marks stay free. To see the paywall: on the Sight tape tab tap "Print the tape at true size", or tap the frosted drop chart on the Bow tab, or tap the setup name at the top right of any page and choose "New setup (Pro)". Buy and Restore purchase are on the paywall; Restore is also on the Quiver Pro card at the bottom of the Sight tape tab. People who bought the paid version get Pro automatically (checked with StoreKit AppTransaction in production only, so the sandbox always shows the paywall).
+WHAT IS NEW IN 1.2: a Range tab (score book). Pick a round (WA 18 m, WA 70 m, WA 50 m compound, NFAA 300, Vegas 450, 3D, Practice), tap where each arrow lands on the face, and Quiver scores it end by end. A finished round shows the group centre, how many millimetres to move the sight (from the sight radius on the Bow page), and, if a sight reading was entered when starting, a button that saves the corrected mark to the sight tape. Also new: tuning notes per setup, a sight radius field, a reading for any distance on the Sight tape page, and ink themes with alternate app icons.
 
-HOW TO USE: The Arrow tab holds the component weights; totals, FOC and energy update as you type. The Bow tab estimates or takes a measured speed and shows drop by distance. The Sight tape tab takes two or more sighted-in marks (distance and sight reading) and shows the fitted marks; with Pro, "Print or share the tape" opens a true-size preview with a Share PDF button (system share sheet, AirPrint or Files). The setup name at the top right of each page switches between bows.
+IN-APP PURCHASES (StoreKit 2, all optional, Restore in Sight tape > Inks and extras, and on the Pro card):
+- Quiver Pro (existing non-consumable): unlimited printed tapes, more setups, the drop chart, score trends, and CSV export. Open it from the Pro card at the foot of the Sight tape tab, the lock on the drop chart (Bow tab), "New setup" in the setup menu, or the locked trend card on the Range tab.
+- One Tape Print, $0.99 consumable: for printing a single tape without Pro. On the Sight tape tab (two marks entered, as on a fresh install), tap "Print the tape at true size"; the Pro sheet opens with "Just this tape: print it once" at the bottom. Buying it spends the credit and opens the true-size tape with Share PDF.
+- Scorecard Posters, $0.99 consumable, three credits: Range tab > shoot or open a round > Share > Poster. The first poster is free; after that the button buys this pack. A poster is an image of the face with every arrow, the ends and the total, shared through the share sheet.
+- Blaze, Navy, Oxblood and Timber inks, $0.99 each, non-consumable: Sight tape tab > "Inks and extras" at the bottom. A bought ink recolours the app and switches the app icon (alternate icons). Field Green is free.
 
-PRIVACY: no data is collected. Settings are stored in a JSON file in the app's Documents folder on the device; the PDF is written to the same folder.
+HOW TO TRY THE RANGE: Range tab > Shoot a round > Practice > Start. Tap the face six times, Next end, tap a few more, Finish. Tap the round in the list to see the group and the sight correction.
+
+PRIVACY: no data is collected. Rounds, setups and notes are stored in a file on the device. No accounts, analytics, ads or third-party SDKs.
 
 2. PURPOSE AND TARGET AUDIENCE
-Quiver is a utility for target and hunting archers: an arrow build calculator (weight, FOC, kinetic energy, spine starting point) and a sight-tape generator. Adults; rated 4+. It does not sell, depict or promote weapons; it is a measurement tool for a sport.
+An archery notebook for target archers and bowhunters: arrow build (weight, FOC, energy, spine), speed and drop, a fitted sight tape that prints at true size, and a score book. Rated 4+.
 
 3. SETUP AND ACCESS
-No setup, login or credentials. Sensible defaults are present on first launch.
+No setup or credentials. A fresh install starts with sample numbers on each page.
 
-4. EXTERNAL SERVICES, TOOLS AND PLATFORMS
-None. No analytics, advertising or third-party frameworks. Built with SwiftUI, StoreKit 2 (for the in-app purchase) and Foundation. The only network traffic is StoreKit talking to the App Store.
+4. EXTERNAL SERVICES
+None. Built with SwiftUI and StoreKit 2.
 
 5. REGIONAL DIFFERENCES
 None.
 
 6. REGULATED INDUSTRY / PROTECTED MATERIAL
-Not applicable. The formulas (AMO FOC, Epley-style estimates, ballistic integration) are standard and computed on the device. All art, text and code are my own work.
+Not applicable. All art, text and code are my own work. Round names describe common scoring formats; no logos or federation artwork are used.

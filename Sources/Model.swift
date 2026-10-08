@@ -73,17 +73,38 @@ final class Store {
     private var saveTask: Task<Void, Never>?
     private let url = URL.documentsDirectory.appending(path: "quiver.json")
     /// 1.0 wrote only arrow, bow and tape; the setup list is optional so those files still load.
-    struct Disk: Codable { var arrow: Arrow; var bow: Bow; var tape: TapeSettings; var setups: [Setup]?; var current: Int? }
+    /// 1.2 added sessions, notes and credits, all optional so 1.0 and 1.1 files still load.
+    struct Disk: Codable {
+        var arrow: Arrow; var bow: Bow; var tape: TapeSettings; var setups: [Setup]?; var current: Int?
+        var sessions: [Session]? = nil
+        var notes: [String: String]? = nil
+        var printCredits: Int? = nil
+        var posterCredits: Int? = nil
+        var freePosterUsed: Bool? = nil
+    }
+    /// Scored rounds, newest first.
+    var sessions: [Session] = []
+    /// Tuning notes per setup, keyed by the setup's id.
+    var notes: [String: String] = [:]
+    /// One-off tape prints bought without Pro, and scorecard posters, each used up one at a time.
+    var printCredits = 0
+    var posterCredits = 0
+    var freePosterUsed = false
 
     init(demo: Bool) {
         if demo {
             var elk = Setup(name: "3D target")
             elk.arrow.point = 100; elk.arrow.gpi = 7.8; elk.arrow.use = "target"; elk.bow.drawWeight = 55
             setups = [Setup(name: "Hunting rig"), elk]
+            tape.marks = [Mark(distance: 20, reading: 12.5), Mark(distance: 40, reading: 24.3), Mark(distance: 60, reading: 41.2)]
+            sessions = Session.demo()
+            notes[setups[0].id.uuidString] = "Moved the rest 1/16 left after paper tuning. Peep 1 turn. Bare shaft hits with fletched at 20."
             return
         }
         if let d = try? Data(contentsOf: url), let disk = try? JSONDecoder().decode(Disk.self, from: d) {
             arrow = disk.arrow; bow = disk.bow; tape = disk.tape
+            sessions = disk.sessions ?? []; notes = disk.notes ?? [:]
+            printCredits = disk.printCredits ?? 0; posterCredits = disk.posterCredits ?? 0; freePosterUsed = disk.freePosterUsed ?? false
             if let list = disk.setups, !list.isEmpty {
                 setups = list
                 current = min(max(0, disk.current ?? 0), list.count - 1)
@@ -93,6 +114,19 @@ final class Store {
     }
 
     var currentName: String { setups[current].name }
+    var currentID: String { setups[current].id.uuidString }
+    var currentNotes: String {
+        get { notes[currentID] ?? "" }
+        set { notes[currentID] = newValue.isEmpty ? nil : newValue }
+    }
+
+    /// Put a mark on the current tape, replacing one already at that distance.
+    func addMark(distance: Double, reading: Double) {
+        tape.marks.removeAll { abs($0.distance - distance) < 0.01 }
+        tape.marks.append(Mark(distance: distance, reading: (reading * 100).rounded() / 100))
+        tape.marks.sort { $0.distance < $1.distance }
+        save()
+    }
 
     private func stash() {
         setups[current].arrow = arrow; setups[current].bow = bow; setups[current].tape = tape
@@ -131,7 +165,10 @@ final class Store {
 
     func save() {
         stash()
-        saveTask?.cancel(); let disk = Disk(arrow: arrow, bow: bow, tape: tape, setups: setups, current: current); let u = url
+        saveTask?.cancel()
+        let disk = Disk(arrow: arrow, bow: bow, tape: tape, setups: setups, current: current, sessions: sessions, notes: notes,
+                        printCredits: printCredits, posterCredits: posterCredits, freePosterUsed: freePosterUsed)
+        let u = url
         saveTask = Task.detached(priority: .utility) {
             try? await Task.sleep(for: .milliseconds(250)); if Task.isCancelled { return }
             if let d = try? JSONEncoder().encode(disk) { try? d.write(to: u, options: .atomic) }

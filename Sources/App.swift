@@ -5,6 +5,7 @@ struct QuiverApp: App {
     @State private var store: Store
     @State private var router = Router()
     @State private var pro: Pro
+    @State private var extras: Extras
     init() {
         let a = ProcessInfo.processInfo.arguments
         let demo = a.contains("-shot") || a.contains("-demoAutoplay")
@@ -12,19 +13,29 @@ struct QuiverApp: App {
         // Store screenshots show everything; the paywall shot is the free app.
         let lockedShot = a.contains("paywall") || a.contains("-locked")
         _pro = State(initialValue: demo ? Pro(forced: !lockedShot) : Pro())
+        _extras = State(initialValue: Extras(demo: demo))
     }
     var body: some Scene {
         WindowGroup {
-            RootView().environment(store).environment(router).environment(pro).preferredColorScheme(.light).tint(Kraft.ink)
-                .onAppear { router.applyShotArgs(store, pro); Autopilot.shared.run(store, router) }
+            RootView().environment(store).environment(router).environment(pro).environment(extras).preferredColorScheme(.light).tint(Kraft.ink)
+                .onAppear {
+                    extras.onCredit = { [store] id in
+                        if id == Extras.printID { store.printCredits += 1 } else if id == Extras.postersID { store.posterCredits += 3 }
+                        store.save()
+                    }
+                    extras.start()
+                    router.applyShotArgs(store, pro)
+                    Autopilot.shared.run(store, router)
+                }
         }
     }
 }
 
 enum Tab: String, CaseIterable {
-    case arrow = "Arrow", bow = "Bow", tape = "Sight tape"
+    case arrow = "Arrow", bow = "Bow", tape = "Sight tape", range = "Range"
     var icon: String {
         switch self {
+        case .range: return "target"
         case .arrow: return "arrow.up.right"
         case .bow: return "scope"
         case .tape: return "ruler"
@@ -36,6 +47,12 @@ enum Tab: String, CaseIterable {
 final class Router {
     var tab: Tab = .arrow
     var showTape = false
+    var shop = false
+    var scoring: UUID? = nil
+    var session: UUID? = nil
+    /// Bumped when the ink changes, so every page redraws in it.
+    var themeTick = 0
+    let demo = ProcessInfo.processInfo.arguments.contains("-shot") || ProcessInfo.processInfo.arguments.contains("-demoAutoplay")
     @MainActor func applyShotArgs(_ s: Store, _ pro: Pro) {
         let a = ProcessInfo.processInfo.arguments
         guard let i = a.firstIndex(of: "-shot"), i + 1 < a.count else { return }
@@ -45,6 +62,14 @@ final class Router {
         case "print": tab = .tape; showTape = true
         case "builder": tab = .arrow; s.arrow.point = 125; s.arrow.use = "elk"
         case "paywall": tab = .tape; pro.paywall = .print
+        case "range": tab = .range
+        case "session": tab = .range; session = s.sessions.first(where: { $0.round == "practice" })?.id
+        case "scoring":
+            tab = .range
+            var x = Session(round: "wa18", distance: 18, yards: false, faceCm: 40, setup: s.currentName)
+            x.ends = [s.sessions.first { $0.round == "wa18" }?.ends.first ?? End(), End(shots: [Shot(x: 0.03, y: 0.05, score: 10, x10: true), Shot(x: -0.12, y: 0.02, score: 9)])]
+            s.sessions.insert(x, at: 0); scoring = x.id
+        case "themes": tab = .tape; shop = true
         default: break
         }
     }
@@ -64,14 +89,21 @@ struct RootView: View {
                 case .arrow: ArrowView()
                 case .bow: BowView()
                 case .tape: TapeView()
+                case .range: RangeView()
                 }
             }
             NotebookTabBar(selection: $router.tab).padding(.bottom, 2)
         }
+        .id(router.themeTick)
         .sheet(isPresented: $router.showTape) { TapePreview().presentationBackground(Kraft.paper) }
+        .sheet(isPresented: $router.shop) { ShopSheet().presentationBackground(Kraft.paper).presentationDetents([.large]) }
+        .sheet(item: Binding(get: { router.session.map(SessionID.init) }, set: { router.session = $0?.id })) { s in SessionDetail(id: s.id).presentationDetents([.large]) }
+        .fullScreenCover(item: Binding(get: { router.scoring.map(SessionID.init) }, set: { router.scoring = $0?.id })) { s in ScoringView(id: s.id) }
         .sheet(item: $pro.paywall) { r in PaywallView(reason: r).presentationBackground(Kraft.paper) }
     }
 }
+
+struct SessionID: Identifiable { let id: UUID }
 
 struct Page<Content: View>: View {
     @ViewBuilder var content: Content

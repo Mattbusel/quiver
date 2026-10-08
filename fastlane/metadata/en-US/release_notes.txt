@@ -1,6 +1,13 @@
-Quiver is now free.
+The biggest Quiver update yet: a range score book, free.
 
-• The arrow build sheet, bow and speed page and your fitted sight marks are free forever
-• New: setups. Keep the hunting rig, the 3D bow and the spare in one notebook, each with its own arrow, bow and tape
-• Quiver Pro is a one-time unlock: the true-size printable tape, more than one setup, and the drop and drift chart
-• Already bought Quiver? Pro is unlocked for you automatically. If it is not, tap Restore on the Pro card at the bottom of the Sight tape tab.
+• Score WA 18 m, 70 m, 50 m compound, NFAA 300, Vegas 450, 3D and practice by tapping where each arrow lands
+• Quiver reads your group and tells you which way, and how many millimetres, to move the sight
+• Save the corrected sight mark to your tape in one tap
+• Read the mark for any distance right on the Sight tape page
+• Tuning notes for each setup, and a sight radius field
+• Kraft-paper scorecard posters to share (the first one is free)
+• Print one tape for 99 cents without Pro
+• Pro adds score trends, every arrow on one face, and a CSV export
+• Four new notebook inks with matching app icons
+
+Everything you've entered carries over.

@@ -41,37 +41,18 @@ jobs:
           xcrun simctl ui "$udid" appearance dark || true
           app=$(find dd/Build/Products -name "Quiver.app" -path "*iphonesimulator*" | head -1)
           xcrun simctl install "$udid" "$app"
-          mkdir -p shots
-          xcrun simctl terminate "$udid" com.mattbusel.quiver || true
-          xcrun simctl launch "$udid" com.mattbusel.quiver -shot arrow
-          sleep 7
-          xcrun simctl io "$udid" screenshot "shots/00.png"
-          xcrun simctl terminate "$udid" com.mattbusel.quiver || true
-          xcrun simctl launch "$udid" com.mattbusel.quiver -shot bow
-          sleep 7
-          xcrun simctl io "$udid" screenshot "shots/01.png"
-          xcrun simctl terminate "$udid" com.mattbusel.quiver || true
-          xcrun simctl launch "$udid" com.mattbusel.quiver -shot tape
-          sleep 7
-          xcrun simctl io "$udid" screenshot "shots/02.png"
-          xcrun simctl terminate "$udid" com.mattbusel.quiver || true
-          xcrun simctl launch "$udid" com.mattbusel.quiver -shot print
-          sleep 7
-          xcrun simctl io "$udid" screenshot "shots/03.png"
-          xcrun simctl terminate "$udid" com.mattbusel.quiver || true
-          xcrun simctl launch "$udid" com.mattbusel.quiver -shot drop
-          sleep 7
-          xcrun simctl io "$udid" screenshot "shots/04.png"
-          xcrun simctl terminate "$udid" com.mattbusel.quiver || true
-          xcrun simctl launch "$udid" com.mattbusel.quiver -shot builder
-          sleep 7
-          xcrun simctl io "$udid" screenshot "shots/05.png"
-          # The paywall, for the in-app purchase review screenshot. Not a store screenshot.
-          mkdir -p iap
-          xcrun simctl terminate "$udid" com.mattbusel.quiver || true
-          xcrun simctl launch "$udid" com.mattbusel.quiver -shot paywall
-          sleep 7
-          xcrun simctl io "$udid" screenshot "iap/paywall.png"
+          mkdir -p shots iap
+          # A first launch after install is slow; warm it up so the first shot is not blank paper.
+          xcrun simctl launch "$udid" com.mattbusel.quiver -shot arrow || true
+          sleep 15
+          i=0
+          for shot in arrow range scoring session tape print bow builder themes paywall; do
+            xcrun simctl terminate "$udid" com.mattbusel.quiver || true
+            xcrun simctl launch "$udid" com.mattbusel.quiver -shot $shot
+            sleep 8
+            xcrun simctl io "$udid" screenshot "shots/$(printf %02d $i)-$shot.png"
+            i=$((i+1))
+          done
       - uses: actions/upload-artifact@v4
         if: always()
         with:

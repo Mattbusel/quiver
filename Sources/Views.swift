@@ -135,7 +135,9 @@ struct BowView: View {
                 Field(label: "Rated speed", hint: "IBO / ATA fps, compound", value: $store.bow.ibo)
                 Field(label: "String extras", hint: "peep, loop, silencers: grains", value: $store.bow.stringExtras)
                 Field(label: "Chronograph", hint: "fps, 0 to estimate instead", value: $store.bow.chrono)
+                Field(label: "Sight radius", hint: "inches, eye to pin; for group corrections", value: $store.bow.sightRadius)
             }.sheet()
+            TuningNotes()
             if pro.unlocked {
             VStack(alignment: .leading, spacing: 8) {
                 Eyebrow("Drop and drift, 20 yard zero")
@@ -155,7 +157,7 @@ struct BowView: View {
             }
         }
         .onChange(of: store.bow.type) { store.save() }.onChange(of: store.bow.drawWeight) { store.save() }.onChange(of: store.bow.drawLength) { store.save() }
-        .onChange(of: store.bow.ibo) { store.save() }.onChange(of: store.bow.stringExtras) { store.save() }.onChange(of: store.bow.chrono) { store.save() }
+        .onChange(of: store.bow.ibo) { store.save() }.onChange(of: store.bow.stringExtras) { store.save() }.onChange(of: store.bow.chrono) { store.save() }.onChange(of: store.bow.sightRadius) { store.save() }
     }
 }
 
@@ -221,13 +223,17 @@ struct TapeView: View {
                     if fit.b < 0 { Text("Your marks run backwards (further is a smaller number). Check them.").font(.note(12, .bold)).foregroundStyle(Kraft.red) }
                     else if fit.residuals.count > 2 { Text("Largest miss across your marks: \(f1(fit.residuals.map { abs($0) }.max() ?? 0, 2)) units.").font(.note(12)).foregroundStyle(Kraft.ink3) }
                 }.sheet()
-                InkButton(title: pro.unlocked ? "Print or share the tape" : "Print the tape at true size", icon: pro.unlocked ? "printer" : "lock", fill: Kraft.fletch) {
-                    if pro.unlocked { router.showTape = true } else { pro.ask(.print) }
+                SightLookup()
+                InkButton(title: pro.unlocked ? "Print or share the tape" : store.printCredits > 0 ? "Print the tape (\(store.printCredits) print left)" : "Print the tape at true size", icon: pro.unlocked || store.printCredits > 0 ? "printer" : "lock", fill: Kraft.fletch) {
+                    if pro.unlocked { router.showTape = true }
+                    else if store.printCredits > 0 { store.printCredits -= 1; store.save(); router.showTape = true }
+                    else { pro.ask(.print) }
                 }
             } else {
                 Text("Enter at least two sighted-in marks and the tape appears.").font(.note(13)).foregroundStyle(Kraft.ink2).sheet()
             }
             ProCard()
+            ShopRow()
         }
         .onChange(of: store.tape.unitMM) { store.save() }.onChange(of: store.tape.clicksPerMM) { store.save() }.onChange(of: store.tape.yards) { store.save() }
         .onChange(of: store.tape.from) { store.save() }.onChange(of: store.tape.to) { store.save() }.onChange(of: store.tape.every) { store.save() }.onChange(of: store.tape.widthMM) { store.save() }
@@ -298,5 +304,62 @@ struct TapePreview: View {
         }
         ctx.closePDF()
         return url
+    }
+}
+
+/// Free-text tuning notes, one page per setup.
+struct TuningNotes: View {
+    @Environment(Store.self) private var store
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Eyebrow("Tuning notes · \(store.currentName)")
+            TextField("Rest moved 1/16 left after paper tuning. Peep one turn. Bare shaft hits with fletched at 20.", text: Binding(get: { store.currentNotes }, set: { store.currentNotes = $0; store.save() }), axis: .vertical)
+                .lineLimit(3...8).font(.note(14)).foregroundStyle(Kraft.ink)
+        }.sheet(tilt: -0.3)
+    }
+}
+
+/// Type any distance, read the mark. For the walk-back, the odd 3D target, the ranged buck.
+struct SightLookup: View {
+    @Environment(Store.self) private var store
+    @State private var distance = 37.0
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Eyebrow("Any distance")
+            HStack(alignment: .center, spacing: 12) {
+                TextField("", value: $distance, format: .number).keyboardType(.decimalPad).font(.fig(34)).foregroundStyle(Kraft.ink).frame(width: 96)
+                    .overlay(alignment: .bottom) { Rectangle().fill(Kraft.ink.opacity(0.35)).frame(height: 1) }
+                Text(store.tape.yards ? "yd" : "m").font(.note(14, .bold)).foregroundStyle(Kraft.ink3)
+                Image(systemName: "arrow.right").font(.system(size: 16, weight: .bold)).foregroundStyle(Kraft.ink3)
+                Text(store.reading(at: distance).map { f1($0, 2) } ?? "–").font(.fig(34)).foregroundStyle(Kraft.fletchDeep)
+                Spacer(minLength: 0)
+            }
+            HStack(spacing: 8) {
+                ForEach([-5.0, -1.0, 1.0, 5.0], id: \.self) { d in
+                    Button { distance = max(1, distance + d) } label: {
+                        Text(d > 0 ? "+\(Int(d))" : "\(Int(d))").font(.note(13, .bold)).foregroundStyle(Kraft.ink).frame(maxWidth: .infinity).padding(.vertical, 7)
+                            .background(RoundedRectangle(cornerRadius: 6).fill(Kraft.paper2))
+                    }.buttonStyle(.plain)
+                }
+            }
+        }.sheet(tilt: 0.3)
+    }
+}
+
+/// Into the back pocket: inks, tape prints, posters.
+struct ShopRow: View {
+    @Environment(Router.self) private var router
+    var body: some View {
+        Button { router.shop = true } label: {
+            HStack(spacing: 12) {
+                HStack(spacing: 3) { ForEach(InkTheme.all) { t in Circle().fill(t.fletch).frame(width: 12, height: 12).overlay(Circle().strokeBorder(t.ink, lineWidth: 2)) } }
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Inks and extras").font(.hand(16, .bold)).foregroundStyle(Kraft.ink)
+                    Text("Notebook colours with matching icons, tape prints, scorecard posters.").font(.note(12)).foregroundStyle(Kraft.ink2)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right").font(.system(size: 12, weight: .heavy)).foregroundStyle(Kraft.ink)
+            }.sheet(padding: 14, tilt: -0.2)
+        }.buttonStyle(.plain)
     }
 }

@@ -1,26 +1,40 @@
-Quiver is an archer's field notebook: the arrow build sheet and a sight tape that prints at true size.
+Quiver is an archer's field notebook: the arrow build sheet, a range score book that reads your group, and a sight tape fitted through the marks you actually shot, printed at true size.
 
-Sight tape software costs a subscription or comes bundled with things you do not need. Quiver is the two jobs that matter, on kraft paper in your pocket. Free to download, and the arrow sheet, speed and fitted marks are free forever.
+Free to download. The arrow sheet, speed, fitted marks and the whole score book are free forever. Quiver Pro is one payment, no subscription.
+
+THE RANGE
+• Score WA 18 m, WA 70 m, WA 50 m compound, NFAA 300, Vegas 450, 3D courses or open practice
+• Tap where each arrow lands on the face: Quiver scores it, Xs included, end by end
+• It finds the centre of your group and tells you how far to move the sight, in millimetres, from your sight radius
+• Shot the round at a sight mark? One tap saves the corrected mark to your tape
+• Every round kept with its ends, notes and setup
+• Share a kraft-paper scorecard poster of the round (your first is free)
 
 THE ARROW
 • Shaft, point, insert, nock, vanes, wrap: total weight, balance point and FOC, drawn on the page
 • Kinetic energy and momentum, checked against game-weight guidelines
-• A spine starting point from draw weight, point weight, length and release
+• A spine starting point from draw weight, point weight and length
 
 BOW AND SPEED
 • Speed estimated from rated speed, draw and arrow weight, or your chronograph reading
 • Drag from the arrow's diameter, weight and vanes
-• Drop from a 20-yard zero, time of flight and crosswind drift by distance (Pro)
+• Tuning notes for every setup
 
 SIGHT TAPE
-• Enter two or more marks you shot and the tape is fitted through them with the modelled trajectory, so the far end is right, not just the middle
+• Enter two or more marks and the tape is fitted through them with the modelled trajectory, so the far end is right, not just the middle
+• Read the mark for any distance in a tap: the walk-back, the odd 3D target, the ranged buck
 • mm, half-mm, inch and click scales, yards or metres, your label spacing and width
-• Shown at true size on screen; share as a PDF that prints 1:1, with a 10 mm check bar (Pro)
+• Print it at true size as a PDF with a 10 mm check bar. Need one tape without Pro? Print it once for 99 cents.
 
-QUIVER PRO, ONE TIME, NO SUBSCRIPTION
-• The true-size sight tape as a PDF: print it at 100%, cut it, stick it on the sight
-• More than one setup: hunting rig, 3D bow, the spare, each with its own arrow, bow and tape
-• The drop and drift chart: time of flight, drop and crosswind drift from 10 to 80 yards
-• One payment, Family Sharing included. Already bought Quiver? Pro is yours automatically.
+QUIVER PRO, ONE TIME
+• Unlimited true-size tape prints
+• A setup for every bow: hunting rig, 3D bow, the spare
+• Drop and drift chart from 10 to 80 yards
+• Your scores over time, and every arrow you've shot on one face
+• Export the score book as a spreadsheet
+• Already bought Quiver? Pro is yours automatically.
+
+EXTRAS
+• Four notebook inks, each with its own app icon, 99 cents each
 
 No account, no ads, no tracking. Everything stays on your phone.

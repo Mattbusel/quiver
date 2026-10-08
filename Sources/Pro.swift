@@ -14,7 +14,7 @@ final class Pro {
     /// The first build with Pro in it. Anything earlier was the paid app with every feature.
     static let firstFreemiumBuild = 2
 
-    enum Reason: String, Identifiable { case setups, print, drop, settings; var id: String { rawValue } }
+    enum Reason: String, Identifiable { case setups, print, drop, settings, trends, export; var id: String { rawValue } }
 
     private(set) var unlocked: Bool
     private(set) var grandfathered = false
@@ -144,6 +144,8 @@ struct PaywallView: View {
                         feature("printer", "The tape, printed", "True size on paper: a PDF that prints 1:1 with a 10 mm check bar. Cut it, stick it on the sight.")
                         feature("square.stack.3d.up", "Every bow you own", "Separate setups for the hunting rig, the 3D bow and the spare: arrow, bow and tape each.")
                         feature("wind", "Drop and drift chart", "Time of flight, drop from a 20 yard zero and 10 mph crosswind drift, 10 to 80 yards.")
+                        feature("chart.line.uptrend.xyaxis", "Your scores over time", "A trend line across your rounds, and every arrow you have shot on one face, so you can see where misses really go.")
+                        feature("tablecells", "Export the score book", "Every round, end and arrow as a spreadsheet.")
                     }
                     .sheet(tilt: -0.3)
 
@@ -167,6 +169,7 @@ struct PaywallView: View {
                         Task { await pro.buy() }
                     }
                     .disabled(pro.busy)
+                    if reason == .print { OneTapeOffer() }
                     HStack {
                         Button { Task { await pro.restore() } } label: {
                             Label("Restore purchase", systemImage: "arrow.clockwise").font(.note(14, .bold)).foregroundStyle(Kraft.ink)
@@ -174,7 +177,7 @@ struct PaywallView: View {
                         Spacer()
                         Button("Not now") { dismiss() }.font(.note(14, .bold)).foregroundStyle(Kraft.ink2)
                     }
-                    Text("One payment, yours for good. Family Sharing works. The arrow sheet, bow page and fitted marks stay free, and nothing you have entered is ever locked.")
+                    Text("One payment, yours for good. Family Sharing works. The arrow sheet, bow page, fitted marks and the whole range score book stay free, and nothing you have entered is ever locked.")
                         .font(.note(11.5)).foregroundStyle(Kraft.ink3).fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.leading, 44).padding(.trailing, 18).padding(.bottom, 40)
@@ -188,6 +191,8 @@ struct PaywallView: View {
         switch reason {
         case .setups: return "One notebook, every bow."
         case .drop: return "Know where it lands."
+        case .trends: return "Watch the scores climb."
+        case .export: return "Your score book, as a spreadsheet."
         default: return "Print the tape. Stick it on."
         }
     }
@@ -276,7 +281,7 @@ struct ProCard: View {
                 .frame(width: 38, height: 38).background(Circle().fill(pro.unlocked ? Kraft.fletch : Kraft.paper2))
             VStack(alignment: .leading, spacing: 2) {
                 Text(pro.unlocked ? "Quiver Pro" : "Quiver Pro, \(pro.price) once").font(.hand(16, .bold)).foregroundStyle(Kraft.ink)
-                Text(pro.unlocked ? (pro.grandfathered ? "Unlocked. Thanks for buying Quiver early." : "Unlocked. Thank you.") : "Printed tape, more setups, drop chart.")
+                Text(pro.unlocked ? (pro.grandfathered ? "Unlocked. Thanks for buying Quiver early." : "Unlocked. Thank you.") : "Printed tape, more setups, drop chart, score trends.")
                     .font(.note(12)).foregroundStyle(Kraft.ink2)
                 if let m = pro.message, pro.paywall == nil { Text(m).font(.note(11.5, .semibold)).foregroundStyle(Kraft.red) }
             }
@@ -294,5 +299,36 @@ struct ProCard: View {
             }
         }
         .sheet(padding: 14)
+    }
+}
+
+/// For someone who only needs this one tape: print it once for 99 cents instead of buying Pro.
+struct OneTapeOffer: View {
+    @Environment(Store.self) private var store
+    @Environment(Extras.self) private var extras
+    @Environment(Router.self) private var router
+    @Environment(\.dismiss) private var dismiss
+    var body: some View {
+        Button {
+            Task {
+                if store.printCredits == 0 { guard await extras.buy(Extras.printID) else { return } }
+                store.printCredits -= 1; store.save()
+                dismiss()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { router.showTape = true }
+            }
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "printer").font(.system(size: 14, weight: .bold))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(store.printCredits > 0 ? "Use a tape print (\(store.printCredits) left)" : "Just this tape: print it once").font(.hand(15, .bold))
+                    Text("For a new tape after re-sighting, without Pro.").font(.note(11))
+                }
+                Spacer()
+                Text(store.printCredits > 0 ? "Use" : extras.price(Extras.printID)).font(.note(13, .heavy))
+                    .padding(.horizontal, 10).padding(.vertical, 6).overlay(Capsule().strokeBorder(Kraft.ink, lineWidth: 1.4))
+            }
+            .foregroundStyle(Kraft.ink).padding(12)
+            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Kraft.ink.opacity(0.3), style: StrokeStyle(lineWidth: 1.2, dash: [5, 4])))
+        }.buttonStyle(.plain).disabled(extras.busy != nil)
     }
 }

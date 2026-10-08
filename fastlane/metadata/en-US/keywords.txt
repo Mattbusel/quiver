@@ -1,1 +1,1 @@
-archery,sight tape,arrow,foc,bowhunting,compound bow,spine,recurve,bow sight,hunting
+archery,bowhunting,compound,recurve,spine,3d,target,scorecard,nfaa,vegas,bow,hunting,practice,group
