@@ -1,0 +1,53 @@
+Quiver é o caderno de campo do arqueiro: uma súmula que lê o seu agrupamento, uma fita de mira ajustada às marcas que você realmente atirou e a ficha da sua flecha, tudo em papel kraft.
+
+NO CAMPO
+• Pontue WA 18 m, WA 70 m, WA 50 m composto, NFAA 300, Vegas 450, percursos 3D ou treino livre
+• Toque onde cada flecha caiu no alvo: o Quiver pontua, X incluídos, série a série
+• Ele acha o centro do agrupamento e diz quantos milímetros mover a mira
+• Atirou com uma marca de mira? Um toque salva a marca corrigida na sua fita
+• Um desafio novo todo mês e o seu recorde pessoal em cada rodada
+• Compartilhe um pôster da rodada em papel kraft
+
+NA TELA BLOQUEADA
+• Widget Marca de mira: a sua marca para qualquer distância, de cinco em cinco com mais e menos na tela de início
+• Widgets para a tela bloqueada e o StandBy, e um widget Última rodada com a sua tendência
+• Uma Atividade ao Vivo mostra a série e o total na tela bloqueada e na Dynamic Island enquanto você pontua
+• Peça a sua marca à Siri ou comece uma rodada pela Central de Controle ou pelo botão de Ação
+
+A FLECHA
+• Tubo, ponta, inserto, nock, penas, wrap: peso total, ponto de equilíbrio e FOC desenhados na página
+• Energia cinética e momento, comparados às referências para cada caça
+• Um spine inicial pela libragem, peso da ponta e comprimento
+
+ARCO E VELOCIDADE
+• Velocidade estimada pela velocidade IBO, abertura e peso da flecha, ou pelo seu cronógrafo
+• Arrasto pelo diâmetro, peso e penas
+• Notas de regulagem para cada equipamento
+
+FITA DE MIRA
+• Com duas marcas ou mais, a fita passa por elas com a trajetória modelada, certa também nas distâncias longas
+• Leia a marca de qualquer distância com um toque
+• Escalas em mm, meio mm, polegadas ou cliques; jardas ou metros
+• Imprima em tamanho real em PDF com uma barra de conferência de 10 mm
+
+QUIVER PRO, PAGAMENTO ÚNICO
+• Impressões ilimitadas, um equipamento para cada arco, tabela de queda e deriva de 10 a 80 jardas
+• Evolução das pontuações, todas as flechas em um alvo, o widget Fita de mira e exportação em planilha
+
+QUIVER PLUS, ASSINATURA
+• Tudo do Pro
+• Análises: séries finais cansadas, regularidade, tamanho do agrupamento e cada distância
+• Backup no iCloud de equipamentos, marcas e rodadas
+• Todas as tintas e seus ícones enquanto você assina
+• 5 pôsteres por mês e um desafio bônus mais difícil todo mês
+
+O Quiver Plus custa US$ 2,99 por mês ou US$ 14,99 por ano (o preço varia por país), e o plano anual começa com 1 semana grátis para novos assinantes. O pagamento é cobrado no seu ID Apple na confirmação da compra ou ao fim do teste. A assinatura renova automaticamente, a menos que a renovação seja desativada pelo menos 24 horas antes do fim do período atual; a renovação é cobrada nas 24 horas anteriores. Gerencie ou cancele quando quiser nos ajustes de assinaturas do seu ID Apple. Quem tem o Pro continua com ele.
+
+EXTRAS
+• Seis tintas para o caderno, cada uma com seu ícone, US$ 0,99 cada
+• Impressões avulsas de fita e pacotes de pôsteres
+
+Sem conta, sem anúncios, sem rastreamento. As telas do app são em inglês.
+
+Termos de uso: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Política de privacidade: https://tensorust.com/apps/quiver/privacy/

@@ -1,13 +1,11 @@
-The biggest Quiver update yet: a range score book, free.
+The biggest Quiver update yet.
 
-• Score WA 18 m, 70 m, 50 m compound, NFAA 300, Vegas 450, 3D and practice by tapping where each arrow lands
-• Quiver reads your group and tells you which way, and how many millimetres, to move the sight
-• Save the corrected sight mark to your tape in one tap
-• Read the mark for any distance right on the Sight tape page
-• Tuning notes for each setup, and a sight radius field
-• Kraft-paper scorecard posters to share (the first one is free)
-• Print one tape for 99 cents without Pro
-• Pro adds score trends, every arrow on one face, and a CSV export
-• Four new notebook inks with matching app icons
+• Your sight mark on the Lock Screen, Home Screen and StandBy: walk the distance in fives right from the widget
+• A Live Activity for the round you're scoring, in the Dynamic Island too
+• Ask Siri for any sight mark, or start a round from Control Center
+• A new challenge every month, and personal bests for every round
+• Quiver Plus: Insights, iCloud backup, every ink and monthly posters, with a 1 week free trial on the yearly plan
+• Two new inks: Carbon and Marsh
+• Clearer VoiceOver labels and new haptics
 
-Everything you've entered carries over.
+Pro stays a one-time purchase, and everything you've entered carries over.

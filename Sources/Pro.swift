@@ -17,6 +17,10 @@ final class Pro {
     enum Reason: String, Identifiable { case setups, print, drop, settings, trends, export; var id: String { rawValue } }
 
     private(set) var unlocked: Bool
+    /// Quiver Plus includes everything in Pro while it is on. Kept apart from `unlocked`, which is the purchase itself.
+    var plus = false
+    /// Pro features available: bought, grandfathered, or lent by Plus.
+    var has: Bool { unlocked || plus }
     private(set) var grandfathered = false
     private(set) var product: Product?
     var busy = false
@@ -40,7 +44,7 @@ final class Pro {
 
     var price: String { product?.displayPrice ?? "$3.99" }
 
-    func ask(_ why: Reason) { if !unlocked { paywall = why } }
+    func ask(_ why: Reason) { if !has { paywall = why } }
 
     func refresh() async {
         guard !forced else { return }
@@ -116,6 +120,7 @@ final class Pro {
 /// A page torn from the back of the notebook: what Pro adds, one price, restore in reach.
 struct PaywallView: View {
     @Environment(Pro.self) private var pro
+    @Environment(Router.self) private var router
     @Environment(\.dismiss) private var dismiss
     let reason: Pro.Reason
     @State private var shown = false
@@ -155,7 +160,7 @@ struct PaywallView: View {
                             Text("ONCE, NOT A SEASON").font(.note(10, .heavy)).tracking(1.6).foregroundStyle(Kraft.fletchDeep)
                         }
                         Spacer()
-                        Text("No\nsubscription").font(.hand(13, .bold)).multilineTextAlignment(.trailing).foregroundStyle(Kraft.red)
+                        Text("Yours\nfor good").font(.hand(13, .bold)).multilineTextAlignment(.trailing).foregroundStyle(Kraft.red)
                             .padding(.horizontal, 12).padding(.vertical, 8)
                             .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Kraft.red.opacity(0.7), style: StrokeStyle(lineWidth: 1.4, dash: [4, 3])))
                             .rotationEffect(.degrees(4))
@@ -170,6 +175,22 @@ struct PaywallView: View {
                     }
                     .disabled(pro.busy)
                     if reason == .print { OneTapeOffer() }
+                    Button {
+                        dismiss()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { router.plus = true }
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "sparkles").font(.system(size: 14, weight: .bold))
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text("Or try Quiver Plus").font(.hand(15, .bold))
+                                Text("Everything in Pro, plus Insights, iCloud backup, every ink and monthly posters. 1 week free on the yearly plan.").font(.note(11)).fixedSize(horizontal: false, vertical: true)
+                            }
+                            Spacer(minLength: 0)
+                            Image(systemName: "chevron.right").font(.system(size: 12, weight: .heavy))
+                        }
+                        .foregroundStyle(Kraft.ink).padding(12)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Kraft.card.opacity(0.7)))
+                    }.buttonStyle(.plain)
                     HStack {
                         Button { Task { await pro.restore() } } label: {
                             Label("Restore purchase", systemImage: "arrow.clockwise").font(.note(14, .bold)).foregroundStyle(Kraft.ink)
@@ -177,14 +198,14 @@ struct PaywallView: View {
                         Spacer()
                         Button("Not now") { dismiss() }.font(.note(14, .bold)).foregroundStyle(Kraft.ink2)
                     }
-                    Text("One payment, yours for good. Family Sharing works. The arrow sheet, bow page, fitted marks and the whole range score book stay free, and nothing you have entered is ever locked.")
+                    Text("Pro is one payment, yours for good. Family Sharing works. The arrow sheet, bow page, fitted marks, the widgets and the whole range score book stay free, and nothing you have entered is ever locked.")
                         .font(.note(11.5)).foregroundStyle(Kraft.ink3).fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.leading, 44).padding(.trailing, 18).padding(.bottom, 40)
             }
         }
         .onAppear { withAnimation(.spring(response: 0.6, dampingFraction: 0.6).delay(0.15)) { shown = true } }
-        .onChange(of: pro.unlocked) { _, now in if now { dismiss() } }
+        .onChange(of: pro.has) { _, now in if now { dismiss() } }
     }
 
     var headline: String {
@@ -277,16 +298,16 @@ struct ProCard: View {
     @Environment(Pro.self) private var pro
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: pro.unlocked ? "checkmark" : "lock.fill").font(.system(size: 14, weight: .bold)).foregroundStyle(Kraft.ink)
-                .frame(width: 38, height: 38).background(Circle().fill(pro.unlocked ? Kraft.fletch : Kraft.paper2))
+            Image(systemName: pro.has ? "checkmark" : "lock.fill").font(.system(size: 14, weight: .bold)).foregroundStyle(Kraft.ink)
+                .frame(width: 38, height: 38).background(Circle().fill(pro.has ? Kraft.fletch : Kraft.paper2))
             VStack(alignment: .leading, spacing: 2) {
-                Text(pro.unlocked ? "Quiver Pro" : "Quiver Pro, \(pro.price) once").font(.hand(16, .bold)).foregroundStyle(Kraft.ink)
-                Text(pro.unlocked ? (pro.grandfathered ? "Unlocked. Thanks for buying Quiver early." : "Unlocked. Thank you.") : "Printed tape, more setups, drop chart, score trends.")
+                Text(pro.has ? "Quiver Pro" : "Quiver Pro, \(pro.price) once").font(.hand(16, .bold)).foregroundStyle(Kraft.ink)
+                Text(pro.unlocked ? (pro.grandfathered ? "Unlocked. Thanks for buying Quiver early." : "Unlocked. Thank you.") : pro.plus ? "Included while Quiver Plus is on." : "Printed tape, more setups, drop chart, score trends.")
                     .font(.note(12)).foregroundStyle(Kraft.ink2)
                 if let m = pro.message, pro.paywall == nil { Text(m).font(.note(11.5, .semibold)).foregroundStyle(Kraft.red) }
             }
             Spacer(minLength: 4)
-            if !pro.unlocked {
+            if !pro.has {
                 VStack(alignment: .trailing, spacing: 8) {
                     Button { pro.ask(.settings) } label: {
                         Text("SEE").font(.note(12, .heavy)).tracking(1.4).foregroundStyle(Kraft.card)
@@ -330,5 +351,28 @@ struct OneTapeOffer: View {
             .foregroundStyle(Kraft.ink).padding(12)
             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Kraft.ink.opacity(0.3), style: StrokeStyle(lineWidth: 1.2, dash: [5, 4])))
         }.buttonStyle(.plain).disabled(extras.busy != nil)
+    }
+}
+
+/// A Plus block for someone without Plus: the shape of the real thing, frosted, with a way in.
+struct PlusLockedBlock<Content: View>: View {
+    @Environment(Router.self) private var router
+    let title: String
+    @ViewBuilder var content: Content
+    var body: some View {
+        ZStack {
+            content.blur(radius: 6).allowsHitTesting(false).accessibilityHidden(true)
+            VStack(spacing: 10) {
+                Image(systemName: "sparkles").font(.system(size: 18, weight: .bold)).foregroundStyle(Kraft.ink)
+                    .frame(width: 44, height: 44).background(Circle().fill(Kraft.fletch))
+                Text(title).font(.hand(18, .bold)).foregroundStyle(Kraft.ink).multilineTextAlignment(.center)
+                Button { router.plus = true } label: {
+                    Text("See Quiver Plus").font(.note(13, .bold)).foregroundStyle(Kraft.card)
+                        .padding(.horizontal, 16).padding(.vertical, 10).background(Capsule().fill(Kraft.ink))
+                }.buttonStyle(.plain)
+            }
+            .padding(18)
+            .background(RoundedRectangle(cornerRadius: 10).fill(Kraft.card.opacity(0.92)))
+        }
     }
 }

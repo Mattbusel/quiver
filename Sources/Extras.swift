@@ -15,12 +15,19 @@ struct InkTheme: Identifiable, Hashable {
     static func rgb(_ hex: UInt32) -> Color {
         Color(red: Double((hex >> 16) & 0xFF) / 255, green: Double((hex >> 8) & 0xFF) / 255, blue: Double(hex & 0xFF) / 255)
     }
+    /// Ink and fletching as hex, for the widgets and the Live Activity (which have no InkTheme).
+    static let hex: [String: (UInt32, UInt32)] = [
+        "field": (0x1F3D2B, 0x9EDB24), "blaze": (0x26262A, 0xFF7A1A), "navy": (0x1B2A4A, 0xFFD23F), "oxblood": (0x4A1A1C, 0x7CC6F2),
+        "timber": (0x3B2A1A, 0xFF5FA2), "carbon": (0x141416, 0xF2F2EE), "marsh": (0x3D4A23, 0xE8B83A),
+    ]
     static let all: [InkTheme] = [
-        InkTheme(id: "field", name: "Field Green", blurb: "Forest ink, chartreuse fletching. Free.", ink: rgb(0x1F3D2B), fletch: rgb(0x9EDB24), fletchDeep: rgb(0x6B9E0F)),
+        InkTheme(id: "field", name: "Field Green", blurb: "Forest ink, chartreuse fletching. The original.", ink: rgb(0x1F3D2B), fletch: rgb(0x9EDB24), fletchDeep: rgb(0x6B9E0F)),
         InkTheme(id: "blaze", name: "Blaze", blurb: "Hunter orange on charcoal.", ink: rgb(0x26262A), fletch: rgb(0xFF7A1A), fletchDeep: rgb(0xC2510A)),
         InkTheme(id: "navy", name: "Navy", blurb: "Navy ink and range-flag yellow.", ink: rgb(0x1B2A4A), fletch: rgb(0xFFD23F), fletchDeep: rgb(0xC79A0A)),
         InkTheme(id: "oxblood", name: "Oxblood", blurb: "Old leather quiver, sky-blue vanes.", ink: rgb(0x4A1A1C), fletch: rgb(0x7CC6F2), fletchDeep: rgb(0x2F86BD)),
         InkTheme(id: "timber", name: "Timber", blurb: "Walnut ink and hot pink vanes.", ink: rgb(0x3B2A1A), fletch: rgb(0xFF5FA2), fletchDeep: rgb(0xD12E77)),
+        InkTheme(id: "carbon", name: "Carbon", blurb: "Carbon black with bright white vanes.", ink: rgb(0x141416), fletch: rgb(0xF2F2EE), fletchDeep: rgb(0x8A8A86)),
+        InkTheme(id: "marsh", name: "Marsh", blurb: "Olive drab ink, goldenrod vanes.", ink: rgb(0x3D4A23), fletch: rgb(0xE8B83A), fletchDeep: rgb(0xA87E12)),
     ]
     static var current: InkTheme = byID(UserDefaults.standard.string(forKey: "quiver.theme") ?? "field")
     static func byID(_ id: String) -> InkTheme { all.first { $0.id == id } ?? all[0] }
@@ -38,6 +45,8 @@ final class Extras {
     nonisolated static var allIDs: [String] { [printID, postersID] + InkTheme.all.filter { $0.id != "field" }.map { themeID($0.id) } }
 
     private(set) var owned: Set<String>
+    /// Quiver Plus lends every ink while it is on. Bought inks stay bought either way.
+    var plusInks = false
     private(set) var products: [String: Product] = [:]
     var busy: String? = nil
     var message: String? = nil
@@ -49,11 +58,22 @@ final class Extras {
     init(demo: Bool) {
         self.demo = demo
         let a = ProcessInfo.processInfo.arguments
-        if demo { owned = a.contains("themes") ? [Extras.themeID("blaze")] : Set(Extras.allIDs) }
+        // Screenshots own everything, so no price tag is ever on screen in a store image.
+        _ = a
+        if demo { owned = a.contains("shopbuy") ? [] : Set(Extras.allIDs) }
         else { owned = Set((UserDefaults.standard.array(forKey: "quiver.owned") as? [String]) ?? []) }
     }
 
-    func ownsTheme(_ id: String) -> Bool { id == "field" || owned.contains(Extras.themeID(id)) }
+    func ownsTheme(_ id: String) -> Bool { id == "field" || plusInks || owned.contains(Extras.themeID(id)) }
+    func boughtTheme(_ id: String) -> Bool { id == "field" || owned.contains(Extras.themeID(id)) }
+
+    /// Plus went on or off. When it lapses, an ink it lent goes back to Field Green (and the icon with it).
+    func setPlus(_ on: Bool) {
+        plusInks = on
+        guard !on, !demo, !ownsTheme(InkTheme.current.id) else { return }
+        InkTheme.apply("field")
+        if UIApplication.shared.supportsAlternateIcons, UIApplication.shared.alternateIconName != nil { UIApplication.shared.setAlternateIconName(nil) }
+    }
     func price(_ id: String) -> String { products[id]?.displayPrice ?? "$0.99" }
 
     func start() {
@@ -144,13 +164,13 @@ struct ShopSheet: View {
                         Spacer()
                         Button("Done") { dismiss() }.font(.note(15, .bold)).foregroundStyle(Kraft.ink)
                     }.padding(.top, 20)
-                    Text("Each ink recolours the whole notebook and swaps the app icon to match. \(extras.price(Extras.themeID("blaze"))) each, yours for good.").font(.note(13)).foregroundStyle(Kraft.ink2)
+                    Text(extras.plusInks ? "Every ink is yours while Quiver Plus is on. Each one recolours the whole notebook and swaps the app icon to match." : "Each ink recolours the whole notebook and swaps the app icon to match. \(extras.price(Extras.themeID("blaze"))) each, yours for good, or every ink with Quiver Plus.").font(.note(13)).foregroundStyle(Kraft.ink2)
                     LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
                         ForEach(InkTheme.all) { t in card(t) }
                     }
                     VStack(alignment: .leading, spacing: 12) {
                         Eyebrow("Credits")
-                        creditRow("printer", "One tape print", pro.unlocked ? "Pro prints as many tapes as you like." : "Print one true-size tape without Pro. You have \(store.printCredits).", Extras.printID, hide: pro.unlocked)
+                        creditRow("printer", "One tape print", pro.has ? "Pro prints as many tapes as you like." : "Print one true-size tape without Pro. You have \(store.printCredits).", Extras.printID, hide: pro.has)
                         creditRow("photo.artframe", "Scorecard posters, three", "Kraft-paper scorecards of your rounds, ready to post. You have \(store.posterCredits)\(store.freePosterUsed ? "" : ", plus one free").", Extras.postersID, hide: false)
                     }.sheet(tilt: -0.3)
                     if let m = extras.message { Text(m).font(.note(12, .semibold)).foregroundStyle(Kraft.red) }
@@ -183,7 +203,7 @@ struct ShopSheet: View {
                     Text(t.name).font(.hand(15, .bold)).foregroundStyle(Kraft.ink)
                     Spacer()
                     if on { Image(systemName: "checkmark.circle.fill").foregroundStyle(t.fletchDeep) }
-                    else if owned { Text("Use").font(.note(12, .heavy)).foregroundStyle(t.ink) }
+                    else if owned { Text(extras.boughtTheme(t.id) ? "Use" : "Plus").font(.note(12, .heavy)).foregroundStyle(t.ink) }
                     else if extras.busy == Extras.themeID(t.id) { ProgressView() }
                     else { Text(extras.price(Extras.themeID(t.id))).font(.note(11, .heavy)).foregroundStyle(.white).padding(.horizontal, 7).padding(.vertical, 3).background(Capsule().fill(t.ink)) }
                 }
@@ -203,7 +223,7 @@ struct ShopSheet: View {
                 Text(detail).font(.note(12)).foregroundStyle(Kraft.ink2).fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 4)
-            if !hide {
+            if !hide && (!Shots.on || Shots.name == "shopbuy") {
                 Button { Task { await extras.buy(id) } } label: {
                     Group { if extras.busy == id { ProgressView().tint(Kraft.card) } else { Text(extras.price(id)).font(.note(13, .heavy)) } }
                         .foregroundStyle(Kraft.card).padding(.horizontal, 12).padding(.vertical, 8).background(Capsule().fill(Kraft.ink))

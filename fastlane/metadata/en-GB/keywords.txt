@@ -1,0 +1,1 @@
+target,recurve,compound,barebow,longbow,club,indoor,outdoor,spine,foc,scoresheet,handicap,field,3d

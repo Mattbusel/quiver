@@ -1,4 +1,4 @@
-"""Quiver 1.2 in-app purchases: two consumables (tape print, posters) and four 99-cent ink themes.
+"""Quiver in-app purchases: two consumables (tape print, posters) and six 99-cent ink themes (Carbon, Marsh added Oct 19).
 
     python Store/iap2.py create                 make every product (idempotent): text, $0.99, all territories
     python Store/iap2.py shot <kind> <png>      review screenshot for every product of a kind (print | posters | theme)
@@ -31,6 +31,8 @@ PRODUCTS = [
     ("theme.navy", "NON_CONSUMABLE", "Navy Ink", "Navy notebook ink with a matching app icon.", "theme", THEME_NOTE),
     ("theme.oxblood", "NON_CONSUMABLE", "Oxblood Ink", "Oxblood notebook ink with a matching app icon.", "theme", THEME_NOTE),
     ("theme.timber", "NON_CONSUMABLE", "Timber Ink", "Walnut notebook ink with a matching app icon.", "theme", THEME_NOTE),
+    ("theme.carbon", "NON_CONSUMABLE", "Carbon Ink", "Carbon black ink, white vanes, matching app icon.", "theme", THEME_NOTE),
+    ("theme.marsh", "NON_CONSUMABLE", "Marsh Ink", "Olive drab ink, goldenrod vanes, matching icon.", "theme", THEME_NOTE),
 ]
 PRICE = "0.99"
 BASE = "com.mattbusel.quiver."

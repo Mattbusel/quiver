@@ -1,8 +1,11 @@
-// The four ink-theme icons: the Quiver arrow on kraft in each theme's ink and fletching.
+// The ink-theme icons: the Quiver arrow on kraft in each theme's ink and fletching.
 // Writes Resources/Assets.xcassets/AppIcon-<Name>.appiconset.
 import { chromium } from "file:///C:/Users/Matthew/lastmile/node_modules/playwright/index.mjs";
 import { mkdirSync, writeFileSync } from "fs";
-const themes = { Blaze: ["#26262a", "#ff7a1a"], Navy: ["#1b2a4a", "#ffd23f"], Oxblood: ["#4a1a1c", "#7cc6f2"], Timber: ["#3b2a1a", "#ff5fa2"] };
+const all = { Blaze: ["#26262a", "#ff7a1a"], Navy: ["#1b2a4a", "#ffd23f"], Oxblood: ["#4a1a1c", "#7cc6f2"], Timber: ["#3b2a1a", "#ff5fa2"], Carbon: ["#141416", "#f2f2ee"], Marsh: ["#3d4a23", "#e8b83a"] };
+// node icons.mjs [Name ...] renders only those.
+const only = process.argv.slice(2);
+const themes = Object.fromEntries(Object.entries(all).filter(([n]) => !only.length || only.includes(n)));
 const root = "C:/Users/Matthew/quiver/Resources/Assets.xcassets";
 const b = await chromium.launch();
 const p = await b.newPage({ viewport: { width: 1024, height: 1024 } });

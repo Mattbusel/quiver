@@ -71,6 +71,8 @@ final class Store {
     private(set) var setups: [Setup] = [Setup(name: "My bow")]
     private(set) var current = 0
     private var saveTask: Task<Void, Never>?
+    /// Runs after every save: widgets, Siri and the iCloud copy follow the notebook.
+    var onSave: (() -> Void)?
     private let url = URL.documentsDirectory.appending(path: "quiver.json")
     /// 1.0 wrote only arrow, bow and tape; the setup list is optional so those files still load.
     /// 1.2 added sessions, notes and credits, all optional so 1.0 and 1.1 files still load.
@@ -98,6 +100,7 @@ final class Store {
             setups = [Setup(name: "Hunting rig"), elk]
             tape.marks = [Mark(distance: 20, reading: 12.5), Mark(distance: 40, reading: 24.3), Mark(distance: 60, reading: 41.2)]
             sessions = Session.demo()
+            freePosterUsed = true; posterCredits = 12
             notes[setups[0].id.uuidString] = "Moved the rest 1/16 left after paper tuning. Peep 1 turn. Bare shaft hits with fletched at 20."
             return
         }
@@ -165,6 +168,7 @@ final class Store {
 
     func save() {
         stash()
+        onSave?()
         saveTask?.cancel()
         let disk = Disk(arrow: arrow, bow: bow, tape: tape, setups: setups, current: current, sessions: sessions, notes: notes,
                         printCredits: printCredits, posterCredits: posterCredits, freePosterUsed: freePosterUsed)
@@ -173,6 +177,32 @@ final class Store {
             try? await Task.sleep(for: .milliseconds(250)); if Task.isCancelled { return }
             if let d = try? JSONEncoder().encode(disk) { try? d.write(to: u, options: .atomic) }
         }
+    }
+
+    func stashForBackup() { stash() }
+
+    /// Replace the whole notebook with a backup (quiver.json format). False if it does not decode.
+    func load(_ data: Data) -> Bool {
+        guard let disk = try? JSONDecoder().decode(Disk.self, from: data) else { return false }
+        arrow = disk.arrow; bow = disk.bow; tape = disk.tape
+        sessions = disk.sessions ?? []; notes = disk.notes ?? [:]
+        printCredits = max(printCredits, disk.printCredits ?? 0); posterCredits = max(posterCredits, disk.posterCredits ?? 0)
+        freePosterUsed = freePosterUsed || (disk.freePosterUsed ?? false)
+        if let list = disk.setups, !list.isEmpty { setups = list; current = min(max(0, disk.current ?? 0), list.count - 1) }
+        else { setups = [Setup(name: "My bow")]; current = 0 }
+        setups[current].arrow = arrow; setups[current].bow = bow; setups[current].tape = tape
+        save()
+        return true
+    }
+
+    /// Quiver Plus: five poster credits at the start of each month you're subscribed (once per calendar month).
+    func plusRefill(_ n: Int) {
+        let d = UserDefaults.standard
+        let month = Date.now.formatted(.iso8601.year().month())
+        guard d.string(forKey: "quiver.plus.refill") != month else { return }
+        d.set(month, forKey: "quiver.plus.refill")
+        posterCredits += n
+        save()
     }
 
     // MARK: speed and ballistics

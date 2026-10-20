@@ -1,4 +1,5 @@
 import SwiftUI
+import TipKit
 
 // MARK: Arrow
 
@@ -138,7 +139,7 @@ struct BowView: View {
                 Field(label: "Sight radius", hint: "inches, eye to pin; for group corrections", value: $store.bow.sightRadius)
             }.sheet()
             TuningNotes()
-            if pro.unlocked {
+            if pro.has {
             VStack(alignment: .leading, spacing: 8) {
                 Eyebrow("Drop and drift, 20 yard zero")
                 HStack { Text("yd").frame(width: 40, alignment: .leading); Text("time").frame(maxWidth: .infinity); Text("drop").frame(maxWidth: .infinity); Text("10 mph wind").frame(maxWidth: .infinity) }.font(.note(10, .heavy)).foregroundStyle(Kraft.ink3)
@@ -224,15 +225,18 @@ struct TapeView: View {
                     else if fit.residuals.count > 2 { Text("Largest miss across your marks: \(f1(fit.residuals.map { abs($0) }.max() ?? 0, 2)) units.").font(.note(12)).foregroundStyle(Kraft.ink3) }
                 }.sheet()
                 SightLookup()
-                InkButton(title: pro.unlocked ? "Print or share the tape" : store.printCredits > 0 ? "Print the tape (\(store.printCredits) print left)" : "Print the tape at true size", icon: pro.unlocked || store.printCredits > 0 ? "printer" : "lock", fill: Kraft.fletch) {
-                    if pro.unlocked { router.showTape = true }
+                TipView(WidgetTip()).tint(Kraft.ink)
+                InkButton(title: pro.has ? "Print or share the tape" : store.printCredits > 0 ? "Print the tape (\(store.printCredits) print left)" : "Print the tape at true size", icon: pro.has || store.printCredits > 0 ? "printer" : "lock", fill: Kraft.fletch) {
+                    if pro.has { router.showTape = true }
                     else if store.printCredits > 0 { store.printCredits -= 1; store.save(); router.showTape = true }
                     else { pro.ask(.print) }
                 }
             } else {
                 Text("Enter at least two sighted-in marks and the tape appears.").font(.note(13)).foregroundStyle(Kraft.ink2).sheet()
             }
+            WidgetsRow()
             ProCard()
+            PlusCard()
             ShopRow()
         }
         .onChange(of: store.tape.unitMM) { store.save() }.onChange(of: store.tape.clicksPerMM) { store.save() }.onChange(of: store.tape.yards) { store.save() }
@@ -361,5 +365,125 @@ struct ShopRow: View {
                 Image(systemName: "chevron.right").font(.system(size: 12, weight: .heavy)).foregroundStyle(Kraft.ink)
             }.sheet(padding: 14, tilt: -0.2)
         }.buttonStyle(.plain)
+    }
+}
+
+/// Into the widgets page: the Lock Screen mark, the Home Screen widgets, the Live Activity, Siri and the Control.
+struct WidgetsRow: View {
+    @Environment(Router.self) private var router
+    var body: some View {
+        Button { router.widgets = true } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "lock.iphone").font(.system(size: 15, weight: .bold)).foregroundStyle(Kraft.ink)
+                    .frame(width: 38, height: 38).background(Circle().fill(Kraft.fletch))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Marks on your Lock Screen").font(.hand(16, .bold)).foregroundStyle(Kraft.ink)
+                    Text("Widgets, Live Activity, Siri and a Control Center button.").font(.note(12)).foregroundStyle(Kraft.ink2)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right").font(.system(size: 12, weight: .heavy)).foregroundStyle(Kraft.ink)
+            }.sheet(padding: 14, tilt: 0.2)
+        }.buttonStyle(.plain)
+    }
+}
+
+/// What Quiver puts outside the app, drawn with the real widget views and your real numbers.
+struct WidgetsPage: View {
+    @Environment(Store.self) private var store
+    @Environment(Pro.self) private var pro
+    @Environment(\.dismiss) private var dismiss
+    var body: some View {
+        let g = store.glance(unlocked: pro.has)
+        ZStack {
+            PaperBackground()
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Eyebrow("Outside the app")
+                            Text("Your marks, one glance away.").font(.hand(30, .bold)).foregroundStyle(Kraft.ink).fixedSize(horizontal: false, vertical: true)
+                        }
+                        Spacer()
+                        Button("Done") { dismiss() }.font(.note(15, .bold)).foregroundStyle(Kraft.ink)
+                    }.padding(.top, 20)
+
+                    LockScreenMock(g: g)
+
+                    HStack(alignment: .top, spacing: 14) {
+                        tile { SightMarkGlanceView(g: g, interactive: false) }
+                        tile { LastRoundGlanceView(g: g) }
+                    }
+                    caption("Sight Mark and Last Round, for the Home Screen and StandBy. Plus and minus on the Sight Mark widget walk the distance in fives, right from the Home Screen.")
+                    tileWide { TapeGlanceView(g: g) }
+                    caption(pro.has ? "Sight Tape: every mark on your tape." : "Sight Tape: every mark on your tape. Comes with Pro or Plus.")
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        Eyebrow("Live on the range")
+                        RoundLiveView(a: RoundActivity(round: "WA 18 m indoor", distance: "18 m", setup: g.setup, ink: g.ink, fletch: g.fletch),
+                                      s: .init(total: 262, end: 10, ends: 20, arrows: 29, xs: 6, outOf: 600, current: ["X", "10"], perEnd: 3))
+                            .background(RoundedRectangle(cornerRadius: 22).fill(Kraft.paper2))
+                        caption("While you score a round, the end and the total sit on the Lock Screen and in the Dynamic Island.")
+                    }
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        Eyebrow("Ask Siri")
+                        siri("\"What's my sight mark in Quiver?\"", "Siri asks how far, then reads the mark from your fitted tape.")
+                        siri("\"Shoot a round in Quiver\"", "Opens the score book on a new round. Also a Control Center and Action button control.")
+                    }.sheet(tilt: -0.3)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Eyebrow("How to add them")
+                        Text("Touch and hold the Home Screen or Lock Screen, tap Edit, then Add Widget, and search for Quiver. For Control Center, swipe down, tap plus, then Add a Control.")
+                            .font(.note(13)).foregroundStyle(Kraft.ink2).fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(.leading, 30).padding(.trailing, 18).padding(.bottom, 40)
+            }
+        }
+    }
+    func tile<C: View>(@ViewBuilder _ c: () -> C) -> some View {
+        c().padding(14).frame(width: 158, height: 158)
+            .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(LinearGradient(colors: [Kraft.paper2, Kraft.paper], startPoint: .topLeading, endPoint: .bottomTrailing)))
+            .shadow(color: Kraft.ink.opacity(0.2), radius: 8, y: 4)
+    }
+    func tileWide<C: View>(@ViewBuilder _ c: () -> C) -> some View {
+        c().padding(14).frame(maxWidth: .infinity).frame(height: 158)
+            .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(LinearGradient(colors: [Kraft.paper2, Kraft.paper], startPoint: .topLeading, endPoint: .bottomTrailing)))
+            .shadow(color: Kraft.ink.opacity(0.2), radius: 8, y: 4)
+    }
+    func caption(_ t: String) -> some View { Text(t).font(.note(12)).foregroundStyle(Kraft.ink2).fixedSize(horizontal: false, vertical: true) }
+    func siri(_ q: String, _ a: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "waveform").font(.system(size: 14, weight: .bold)).foregroundStyle(Kraft.ink).frame(width: 30, height: 30).background(Circle().fill(Kraft.fletch))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(q).font(.hand(15, .bold)).foregroundStyle(Kraft.ink)
+                Text(a).font(.note(12)).foregroundStyle(Kraft.ink2).fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+}
+
+/// A Lock Screen drawn in the notebook's ink, with the Sight Mark widgets on it.
+struct LockScreenMock: View {
+    let g: Glance
+    var body: some View {
+        let ink = Color(hex: g.ink)
+        VStack(spacing: 8) {
+            Text(Date.now.formatted(.dateTime.weekday(.wide).month(.wide).day())).font(.system(size: 14, weight: .semibold)).foregroundStyle(.white.opacity(0.85))
+            Text("9:41").font(.system(size: 72, weight: .bold, design: .rounded)).foregroundStyle(.white)
+            HStack(spacing: 10) {
+                LockCircleView(g: g).frame(width: 64, height: 64)
+                LockMarkView(g: g).padding(.horizontal, 10).frame(height: 64).frame(maxWidth: .infinity)
+                    .background(RoundedRectangle(cornerRadius: 14).fill(.white.opacity(0.18)))
+            }
+            .foregroundStyle(.white)
+            .environment(\.colorScheme, .dark)
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity)
+        .background(RoundedRectangle(cornerRadius: 30, style: .continuous).fill(LinearGradient(colors: [ink, ink.opacity(0.75), Color(hex: g.fletch).opacity(0.55)], startPoint: .top, endPoint: .bottom)))
+        .shadow(color: Kraft.ink.opacity(0.25), radius: 10, y: 5)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Lock Screen preview with the Sight Mark widget")
     }
 }

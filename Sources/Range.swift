@@ -1,4 +1,6 @@
+import StoreKit
 import SwiftUI
+import TipKit
 
 // MARK: Rounds and faces
 
@@ -150,11 +152,13 @@ struct RangeView: View {
     @Environment(Store.self) private var store
     @Environment(Router.self) private var router
     @Environment(Pro.self) private var pro
+    @Environment(Plus.self) private var plus
     @State private var picking = false
     @State private var csv: URL? = nil
     var body: some View {
         Page {
             PageHeader(eyebrow: "Score book", title: "The range.")
+            if router.focus == "insights" && plus.active { InsightsCard() }
             Button { picking = true } label: {
                 HStack(spacing: 14) {
                     FaceIcon().frame(width: 58, height: 58)
@@ -166,20 +170,27 @@ struct RangeView: View {
                     Image(systemName: "chevron.right").font(.system(size: 13, weight: .heavy)).foregroundStyle(Kraft.ink)
                 }.sheet(padding: 14, tilt: -0.4)
             }.buttonStyle(.plain)
+            .accessibilityHint("Pick a round and score it by tapping the face")
+            TipView(ScoreTip()).tint(Kraft.ink)
+            ChallengeCard()
             if store.sessions.isEmpty {
                 Text("No rounds yet. Shoot a practice end at one of your sight marks: if the group sits off centre, Quiver tells you which way to move the sight and corrects the mark.").font(.note(13)).foregroundStyle(Kraft.ink2).sheet(tilt: 0.3)
             } else {
-                if pro.unlocked { TrendCard() } else {
+                if pro.has { TrendCard() } else {
                     LockedBlock(reason: .trends, title: "Your scores over time") { TrendSample().sheet(tilt: 0.3) }
                 }
+                if plus.active { if router.focus != "insights" { InsightsCard() } } else {
+                    PlusLockedBlock(title: "Insights: where your points go") { InsightsSample().sheet(tilt: -0.3) }
+                }
+                BestsCard()
                 VStack(alignment: .leading, spacing: 4) {
                     Eyebrow("Rounds shot")
                     ForEach(store.sessions) { s in
                         Button { router.session = s.id } label: { SessionRow(session: s) }.buttonStyle(.plain)
                     }
-                    if pro.unlocked, let csv {
+                    if pro.has, let csv {
                         ShareLink(item: csv) { Label("Export the score book (CSV)", systemImage: "tablecells").font(.note(13, .bold)).foregroundStyle(Kraft.ink) }.padding(.top, 8)
-                    } else if !pro.unlocked {
+                    } else if !pro.has {
                         Button { pro.ask(.export) } label: { Label("Export the score book (Pro)", systemImage: "lock").font(.note(13, .bold)).foregroundStyle(Kraft.ink2) }.buttonStyle(.plain).padding(.top, 8)
                     }
                 }.sheet()
@@ -187,7 +198,7 @@ struct RangeView: View {
         }
         .sheet(isPresented: $picking) { RoundPicker().presentationBackground(Kraft.paper).presentationDetents([.large]) }
         .task(id: store.sessions.count) {
-            guard pro.unlocked else { return }
+            guard pro.has else { return }
             let u = URL.temporaryDirectory.appending(path: "Quiver score book.csv")
             try? Session.csv(store.sessions).write(to: u, atomically: true, encoding: .utf8)
             csv = u
@@ -304,8 +315,10 @@ struct RoundPicker: View {
 struct ScoringView: View {
     @Environment(Store.self) private var store
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.requestReview) private var requestReview
     let id: UUID
     @State private var finished = false
+    @State private var best = false
     var body: some View {
         if let i = store.sessions.firstIndex(where: { $0.id == id }) {
             let s = store.sessions[i], rd = s.info
@@ -354,7 +367,7 @@ struct ScoringView: View {
                     }
                     if full && !done {
                         InkButton(title: "Next end", icon: "arrow.right", fill: Kraft.fletch) {
-                            store.sessions[i].ends.append(End()); store.save()
+                            store.sessions[i].ends.append(End()); store.save(); live(i)
                             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                         }
                     } else if done {
@@ -365,8 +378,11 @@ struct ScoringView: View {
                     Spacer(minLength: 0)
                 }.padding(.horizontal, 20)
             }
+            .onAppear { if !Shots.on { LiveRound.start(store.sessions[i]) } }
+            .sensoryFeedback(.success, trigger: best)
         }
     }
+    func live(_ i: Int) { if store.sessions.indices.contains(i) { LiveRound.update(store.sessions[i]) } }
     func tapper(_ i: Int, _ face: Face) -> ((Double, Double) -> Void) {
         { x, y in
             let (sc, x10) = face.score(r: (x * x + y * y).squareRoot())
@@ -377,7 +393,7 @@ struct ScoringView: View {
         if store.sessions[i].ends.isEmpty { store.sessions[i].ends.append(End()) }
         let last = store.sessions[i].ends.count - 1
         store.sessions[i].ends[last].shots.append(shot)
-        store.save()
+        store.save(); live(i)
         UIImpactFeedbackGenerator(style: shot.score >= store.sessions[i].info.face.top - 1 ? .heavy : .light).impactOccurred()
     }
     func undo(_ i: Int) {
@@ -385,13 +401,24 @@ struct ScoringView: View {
         if let last = ends.indices.last, ends[last].shots.isEmpty, ends.count > 1 { ends.removeLast() }
         if let last = ends.indices.last, !ends[last].shots.isEmpty { ends[last].shots.removeLast() }
         store.sessions[i].ends = ends
-        store.save()
+        store.save(); live(i)
     }
     func finish(_ i: Int) {
         store.sessions[i].ends.removeAll { $0.shots.isEmpty }
-        if store.sessions[i].ends.isEmpty { store.sessions.remove(at: i) }
+        var kept: Session? = nil
+        if store.sessions[i].ends.isEmpty { store.sessions.remove(at: i) } else { kept = store.sessions[i] }
         store.save()
+        LiveRound.end(kept)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
+        // A happy moment: a new personal best, or the third finished round. Never on launch.
+        if let k = kept, !Shots.on {
+            let pb = store.isPersonalBest(k)
+            if pb { best.toggle() }
+            let finished = store.sessions.filter { $0.arrows > 0 }.count
+            if pb || finished == 3 || finished == 10 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { requestReview() }
+            }
+        }
         dismiss()
     }
 }
@@ -421,6 +448,9 @@ struct TargetFace: View {
                 }
             }
             .contentShape(Rectangle())
+            .accessibilityElement()
+            .accessibilityLabel(onTap == nil ? "Target face with \(shots.count) arrows" : "Target face. Tap where the arrow landed.")
+            .accessibilityAddTraits(onTap == nil ? .isImage : .allowsDirectInteraction)
             .gesture(DragGesture(minimumDistance: 0).onEnded { v in
                 guard let onTap else { return }
                 let x = (v.location.x - c.x) / R, y = -(v.location.y - c.y) / R
@@ -486,6 +516,7 @@ struct ThreeDPad: View {
 struct SessionDetail: View {
     @Environment(Store.self) private var store
     @Environment(Pro.self) private var pro
+    @Environment(Plus.self) private var plus
     @Environment(Extras.self) private var extras
     @Environment(\.dismiss) private var dismiss
     let id: UUID
@@ -602,7 +633,9 @@ struct SessionDetail: View {
                         .padding(.horizontal, 12).padding(.vertical, 9).background(RoundedRectangle(cornerRadius: 7).fill(Kraft.fletch))
                 }.buttonStyle(.plain).disabled(extras.busy != nil)
             }
-            Text("A scorecard poster is the face with every arrow, the ends and your total, drawn on kraft paper, ready to post. Your first one is free; then \(extras.price(Extras.postersID)) for three.").font(.note(11.5)).foregroundStyle(Kraft.ink3)
+            if !Shots.on {
+                Text("A scorecard poster is the face with every arrow, the ends and your total, drawn on kraft paper, ready to post. Your first one is free; then \(extras.price(Extras.postersID)) for three\(plus.active ? "" : ", or \(Plus.monthlyPosters) every month with Quiver Plus").").font(.note(11.5)).foregroundStyle(Kraft.ink3)
+            }
             if let m = extras.message { Text(m).font(.note(12, .semibold)).foregroundStyle(Kraft.red) }
         }.sheet(tilt: 0.3)
     }

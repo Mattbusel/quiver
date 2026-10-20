@@ -1,1 +1,1 @@
-archery,bowhunting,compound,recurve,spine,3d,target,scorecard,nfaa,vegas,bow,hunting,practice,group
+bowhunting,compound,recurve,spine,foc,3d,target,scorecard,nfaa,vegas,hunting,practice,group,range

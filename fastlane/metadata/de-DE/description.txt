@@ -1,0 +1,53 @@
+Quiver ist das Feldnotizbuch für Bogenschützen: ein Schießbuch, das deine Gruppe liest, ein Visierband, das durch deine echten Visiermarken gelegt wird, und das Pfeil-Datenblatt, alles auf Kraftpapier.
+
+AUF DEM PLATZ
+• Werte WA 18 m, WA 70 m, WA 50 m Compound, NFAA 300, Vegas 450, 3D-Parcours oder freies Training
+• Tippe, wo jeder Pfeil steckt: Quiver wertet ihn, X inklusive, Passe für Passe
+• Quiver findet die Mitte deiner Gruppe und sagt dir, wie viele Millimeter das Visier wandern muss
+• Mit einer Visiermarke geschossen? Ein Tipp speichert die korrigierte Marke auf deinem Band
+• Jeden Monat eine neue Challenge und deine Bestleistung für jede Runde
+• Teile ein Ergebnis-Poster der Runde auf Kraftpapier
+
+AUF DEM SPERRBILDSCHIRM
+• Widget Visiermarke: deine Marke für jede Distanz, in Fünferschritten mit Plus und Minus direkt auf dem Home-Bildschirm
+• Widgets für Sperrbildschirm und StandBy, dazu ein Widget mit der letzten Runde und deinem Trend
+• Eine Live-Aktivität zeigt Passe und Summe auf dem Sperrbildschirm und in der Dynamic Island, während du wertest
+• Frag Siri nach deiner Visiermarke oder starte eine Runde aus dem Kontrollzentrum oder per Aktionstaste
+
+DER PFEIL
+• Schaft, Spitze, Insert, Nocke, Federn, Wrap: Gesamtgewicht, Schwerpunkt und FOC, auf die Seite gezeichnet
+• Kinetische Energie und Impuls im Vergleich mit den Richtwerten für Wild
+• Ein Spine-Startwert aus Zuggewicht, Spitzengewicht und Länge
+
+BOGEN UND TEMPO
+• Geschwindigkeit geschätzt aus IBO-Wert, Auszug und Pfeilgewicht, oder dein Chronograph
+• Luftwiderstand aus Durchmesser, Gewicht und Federn
+• Tuning-Notizen für jedes Setup
+
+VISIERBAND
+• Ab zwei Marken wird das Band mit der berechneten Flugbahn durch sie gelegt, damit auch die weiten Distanzen stimmen
+• Lies die Marke für jede Distanz mit einem Tipp ab
+• Skalen in mm, halben mm, Zoll oder Klicks; Yards oder Meter
+• Drucke es in Originalgröße als PDF mit 10-mm-Kontrollbalken
+
+QUIVER PRO, EINMALIG
+• Unbegrenzte Banddrucke, ein Setup für jeden Bogen, Fall- und Drifttabelle von 10 bis 80 Yards
+• Ergebnisverlauf, alle Pfeile auf einer Scheibe, das Widget Visierband und Export als Tabelle
+
+QUIVER PLUS, ABO
+• Alles aus Pro
+• Analysen: schwächere späte Passen, Beständigkeit, Gruppengröße im Verlauf und wie jede Distanz läuft
+• iCloud-Backup von Setups, Marken und allen Runden
+• Alle Tinten und ihre App-Symbole, solange du abonniert hast
+• 5 Ergebnis-Poster jeden Monat und eine schwerere Bonus-Challenge jeden Monat
+
+Quiver Plus kostet 2,99 € im Monat oder 14,99 € im Jahr (Preise je nach Land), und der Jahresplan beginnt für neue Abonnenten mit 1 Woche gratis. Die Zahlung wird bei Kaufbestätigung oder am Ende des Probezeitraums über deine Apple-ID abgerechnet. Das Abo verlängert sich automatisch, sofern die automatische Verlängerung nicht mindestens 24 Stunden vor Ende des Zeitraums deaktiviert wird; die Verlängerung wird innerhalb der letzten 24 Stunden berechnet. Verwalten oder kündigen kannst du jederzeit in den Abo-Einstellungen deiner Apple-ID. Wer Pro besitzt, behält Pro in jedem Fall.
+
+EXTRAS
+• Sechs Notizbuch-Tinten mit eigenem App-Symbol, je 0,99 €
+• Einzelne Banddrucke und Poster-Pakete
+
+Kein Konto, keine Werbung, kein Tracking. Die Bildschirme der App sind auf Englisch.
+
+Nutzungsbedingungen: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Datenschutz: https://tensorust.com/apps/quiver/privacy/
